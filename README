@@ -1,0 +1,7 @@
+This folder contains all relevant code and tests for the server part of the app.
+
+src/ has the actual code for the Operational and Authentication Servers.
+
+test/ has all test related code.
+
+By Jeremy Chan and Chris Zhang 2018.
