@@ -8,52 +8,31 @@ function errorHandler(message, err){
     console.log(message + err);
 }
 
-//takes user_id arg, returns corresponding group #
-function findUser(user_id){
+function connectToDatabase(){
 }
 
-//takes in raw request header, determines which user to get
-function findUserFromRequest(request, response){
-    var user_id;
-    return findUser(user_id);
+function addUser(user_id, group_id){
 }
 
-function validateUser(user_id, password){
-    
+function deleteUser(user_id){
 }
 
-//takes in raw request header, validates with info supplied from that
-function validateUserFromRequest(request, response){
-    var user_id;
-    var password;
-    validateUser(user_id, password);
-}
-						  
-    
-//reads request header, determines which method to call
-function processRequest(request, response){
-    var operation = ;
-    switch(operation){
-    case 'FIND_USER':
-	findUserFromRequest(request, response);
-	break;
-    case 'VALIDATE_USER':
-	validateUserFromRequest(request, response);
-    default:
-	response.write('403 Operation Forbidden.');
-	response.end();
-    }
+function getUserGroup(user_id){
 }
 
-function handleResponse(request, response){
-    processRequest(request);
+function checkIfUserExists(user_id){
 }
 
-const server = http.createServer(handleResponse);
+function validateCredentials(user_id, password){
+	
+}
+
+
+const server = http.createServer(handleResponse());
 
 server.listen(port, function(err){
     if(err){
-	return errorHandler('Error: ', err);
+		return errorHandler('Error: ', err);
     }
 
     console.log('Server running on port ' + port);
