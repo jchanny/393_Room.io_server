@@ -23,18 +23,33 @@ function addUser(user_id, group_id, password, connectionObj, callback){
 
 //removes user from Auth Databases
 //returns -1 if user doens't exist, 1 if deletion was successful
-function deleteUser(user_id, connectionObj){
+function deleteUser(user_id, connectionObj, callback){
 	connectionObj.query('DELETE FROM AuthDatabase WHERE user_id = ?', [user_id], function(err, results){
 		if(err) throw err;
 		else{
 			if(results.length == 0)
-				return -1;
+				callback(-1);
 			else
-				return 1;
+				callback(1);
 		}
 	});
 }
 
+//returns -1 if user_id not in AuthDatabase, group_number otherwise
+function getUserGroup(user_id, connectionObj, callback){
+	var result;
+	
+	connectionObj.query('SELECT group_id FROM AuthDatabase WHERE user_id = ?', [user_id], function(err, results){
+		if(err) throw err;
+		else{
+			//result doesn't exist
+			if(results.length == 0)
+				callback(-1);
+			else
+				callback(results[0].group_id);
+		}
+	});
+}
 
 //creates connection and tests to make sure connection can be established
 var connectToDatabase = function(dbPort, dbUser, dbPassword, db){
@@ -61,21 +76,6 @@ var connectToDatabase = function(dbPort, dbUser, dbPassword, db){
 	return connection;
 }
 
-//returns -1 if user_id not in AuthDatabase, group_number otherwise
-function getUserGroup(user_id, connectionObj, callback){
-	var result;
-	
-	connectionObj.query('SELECT group_id FROM AuthDatabase WHERE user_id = ?', [user_id], function(err, results){
-		if(err) throw err;
-		else{
-			//result doesn't exist
-			if(results.length == 0)
-				callback(-1);
-			else
-				callback(results[0].group_id);
-		}
-	});
-}
 
 //will process request, TBD
 function handleResponse(){
@@ -99,7 +99,7 @@ function main(){
 
 }
 
-//main();
+main();
 
 module.exports.connectToDatabase = connectToDatabase;
 module.exports.getUserGroup = getUserGroup;

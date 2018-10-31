@@ -52,8 +52,9 @@ describe('test addUser()', function(){
 
 	it("User should be added successfully if doesn't exist.", function(){
 		AuthServer.addUser(3000, 9999, 'a4444', connection, function(){
-			connection.query('SELECT group_id FROM AuthDatabase WHERE user_id = 3000', function(results){
+			connection.query('SELECT group_id FROM AuthDatabase WHERE user_id = 3000',[], function(results){
 				assert.equal(results[0].group_id, 9999);
+				
 			});
 		});
 	});
@@ -64,7 +65,6 @@ describe('test addUser()', function(){
 	it("Should not add user if user_id provided is not an integer.", function(){
 	});
 
-	connection.end();
 });
 
 describe('test deleteUser()', function(){
@@ -87,7 +87,6 @@ describe('test deleteUser()', function(){
 describe('test getUserGroup()', function(){
 
 	var connection = AuthServer.connectToDatabase(3306, 'root', 'a', 'test');
-
 	
 	it("getUserGroup() should be able to be called if no database connection exists", function(){
 	});
@@ -109,7 +108,6 @@ describe('test getUserGroup()', function(){
 			
 		});
 	})
-	connection.end();
 });
 
 
