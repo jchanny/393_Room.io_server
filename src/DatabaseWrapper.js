@@ -12,29 +12,32 @@ class Database{
 		this.db = mysql.createConnection(connectionObj);
 	}
 
-	query(queryString, args){
-		return new Promise(function(resolve, reject){
-			console.log(this.db);
-			this.db.query(queryString, args, function(err, results){
-				console.log(queryString);
-				console.log(results);
-				if(err){
+	connectToDatabase(){
+		return new Promise((resolve, reject) => {
+			this.db.connect(function(err){
+				if(err)
 					reject(err);
-				}
-				else{
-					resolve;
-				}
+				resolve();
+			});
+		});
+	}
+
+	query(queryString, args){
+		return new Promise((resolve, reject) => {
+			this.db.query(queryString, args, function(err, results){
+				if(err)
+					reject(err);
+				resolve(results);
 			});
 		});
 	}
 
 	close(){
-		return new Promise(function(resolve, reject){
-			this.db.end(function(err){
+		return new Promise((resolve, reject) => {
+			this.db.end(err=>{
 				if(err)
 					return reject(err);
-				else
-					resolve();
+				resolve();
 			});
 		});
 	}
