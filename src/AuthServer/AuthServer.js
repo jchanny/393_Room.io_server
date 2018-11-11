@@ -5,7 +5,9 @@
 const mysql = require('mysql');
 const http = require('http');
 const Database = require('../DatabaseWrapper.js');
+
 const port = 3000;
+const INVALID_ARGUMENT_TYPE = 'Input argument is of wrong type.';
 
 function errorCallback(err){
 	throw err;
@@ -42,6 +44,9 @@ function deleteUser(db, user_id, callback){
 
 function getUserGroup(db, user_id, callback){
 
+	if(typeof user_id != 'number')
+		return callback(INVALID_ARGUMENT_TYPE);
+	
 	db.query('SELECT group_id FROM AuthDatabase WHERE user_id = ?', [user_id]).then(function(results){
 		if(results.length == 0){
 			callback(-1);
@@ -56,6 +61,10 @@ function getUserGroup(db, user_id, callback){
 
 //creates connection and tests to make sure connection can be established
 var connectToDatabase = function(port, user, password, dbName){
+	if(port == 3000){
+		throw new Error('Database and Auth Server cannot be hosted on same port!');
+	}
+	
 	var db = new Database({
 		port : port,
 		user : user,
@@ -96,7 +105,7 @@ function main(){
 
 }
 
-main();
+//main();
 
 module.exports.connectToDatabase = connectToDatabase;
 module.exports.getUserGroup = getUserGroup;
