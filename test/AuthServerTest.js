@@ -111,6 +111,7 @@ describe('Checking test environment is setup correctly.', function(){
 	
 //     });
 
+	 
 
 //     it("getUserGroup() should return User does not exist if user_id not in database", function(done){
 //     	return AuthServer.getUserGroup(connection, 0000222, function(result){
