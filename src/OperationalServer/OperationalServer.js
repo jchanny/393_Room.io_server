@@ -3,7 +3,7 @@ const AuthServer = require('../AuthServer/AuthServer.js');
 const port = 8080;
 const mongoPort = 27017;
 const MongoClient = require('mongodb').MongoClient;
-const connStr = 'mongodb://localhost:27017/test';
+const connStr = 'mongodb://localhost:27017';
 
 
 //returns true if user_id, password match a user in Auth Database
@@ -36,25 +36,18 @@ async function createNewUser(user_id, password, email, name, group_id){
     var successAdd = await AuthServer.addUser(user_id, group_id, password);
 
     if(successAdd == 0){
-	var userDoc = {
-	    "user_id" : user_id,
-	    "name" : name,
-	    "email" : email,
-	    "member_group_id" : group_id,
-	    "involved_tabs" : [],
-	    "notifications" : []
-	};
+	return console.log('User added successfully.');
     }
     else{
 	return console.log('An error occured.');
     }
 }
 
-function fetchData(user_id, group_id){
-    
+function fetchGroupData(group_id){
+    return {};
 }
 
-function modifyData(group_id, payload){
+function fetchData(user_id, group_id){
     
 }
 
@@ -71,12 +64,36 @@ function removeUserFromGroup(user_id, group_id){
 }
 
 //returns user data json field 
-function getUserData(user_id){
+async function getUserData(user_id){
+    if(typeof user_id != 'number')
+	return 'Input argument is of wrong type';
+
+    var group = await AuthServer.getUserGroup(user_id, function(results){
+	return results;
+    });
+
+    if(group == 'User does not exist'){
+	return 'User does not exist';
+    }
+
+    var groupData = fetchGroupData(group);
+    
+    var memberDataList = groupData[members];
+    return memberDataList.find(x => x.user_id === user_id);
     
 }
 
-function createGroup(group_owner, group_id, group_name){
-    var group_owner_json = getUserData(group_owner);
+async function createGroup(group_owner, group_id, group_name){
+    if(typeof group_owner != 'number' || typeof group_id != 'number' || typeof group_name != 'string')
+	return 'Input argument is of wrong type.';
+    
+    var group_owner_json = {
+	"user_id" : group_owner,
+	"member_group_id" : group_id,
+	"admined_group_id" : group_id,
+	"involved_tabs" : [],
+	"notifications" : []
+    };
     
     var document = {
 	"group_id" : group_id,
@@ -87,14 +104,14 @@ function createGroup(group_owner, group_id, group_name){
 	"messages" : []
     };
     
-    MongoClient.connect(connStr, function(err, db){
+   return MongoClient.connect(connStr, function(err, client){
 	if(err) throw err;
 	
-	var collection = db.collection('OperationalDatabase');
+	const db = client.db('test');
 	
-	collection.insert(document, function(error, result){
+	db.collection("OperationalDatabase").insert(document, function(error, result){
 	    if(error) throw error;
-	    db.close();
+	    client.close();
 	});
     });
 }
@@ -131,4 +148,9 @@ function main(){
     });
 }
 
+
+
 module.exports.checkCredentials = checkCredentials;
+module.exports.createNewUser = createNewUser;
+module.exports.getUserData = getUserData;
+module.exports.createGroup = createGroup;
