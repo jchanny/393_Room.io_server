@@ -2,17 +2,17 @@
 //Jeremy Chan + Chris Zhang
 const assert = require('assert');
 const AuthServer = require('../src/AuthServer/AuthServer.js');
-const mysql = require('mysql');
+const expect = require('expect');
 
 
-describe('Checking test environment is setup correctly.', function(){
-    var connection = AuthServer.connectToDatabase(3306, 'root', 'a', 'test');
+// describe('Checking test environment is setup correctly.', function(){
+//     var connection = AuthServer.connectToDatabase(3306, 'root', 'a', 'test');
     
-    it('Verifying a test database named "test" running on port 3306, root user, password of "a" exists.', function(){
-	assert.notEqual(connection, null);
-    });
+//     it('Verifying a test database named "test" running on port 3306, root user, password of "a" exists.', function(){
+// 	assert.notEqual(connection, null);
+//     });
 
-});
+// });
 
 // describe('test validateCredentials()', function(){
 
@@ -104,11 +104,21 @@ describe('Checking test environment is setup correctly.', function(){
 
  describe('test getUserGroup()', function(){
 
-    var connection = AuthServer.connectToDatabase(3306, 'root', 'a', 'test');
-
+     it("getUserGroup() should return correct group_id of user", async function(){
+	 try{
+	     await AuthServer.getUserGroup(111, function(result){
+		 return assert.equal(result, 2222);
+	     });
+	 }
+	 catch(err){
+	     console.log(err);
+	     return assert.fail();
+	 }
+     });
+	
 //     it("getUserGroup() should not be able to be called if no database connection exists", function(done){
 //     	done();
-	
+     
 //     });
 
 	 

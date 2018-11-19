@@ -5,6 +5,12 @@
 const mysql = require('mysql');
 const http = require('http');
 const Database = require('../DatabaseWrapper.js');
+var db  =  new Database({
+	port : 3306,
+	user : 'root',
+	password : 'a',
+	database : 'test'
+});
 
 const port = 3000;
 const INVALID_ARGUMENT_TYPE = 'Input argument is of wrong type.';
@@ -71,62 +77,38 @@ function deleteUser(db, user_id, callback){
     });
 }
 
-function getUserGroup(db, user_id, callback){
+async function getUserGroup(user_id, callback){
 
     if(typeof user_id != 'number')
 	return INVALID_ARGUMENT_TYPE;
-    
-    db.query('SELECT group_id FROM AuthDatabase WHERE user_id = ?', [user_id]).then((results)=>{
-	if(results.length == 0){
-	   return callback('User does not exist');
-	}else{
-	    return callback(results[0].group_id);
-	}
-    }).catch(function(err){
-	console.log(error);
-    });
+
+    var results = await db.query('SELECT group_id FROM AuthDatabase WHERE user_id = ?', [user_id]);
+
+    db.close();
+    return callback(results[0].group_id);
+    // db.query('SELECT group_id FROM AuthDatabase WHERE user_id = ?', [user_id]).then((results)=>{
+    // 	if(results.length == 0){
+    // 	    return callback('User does not exist');
+    // 	}else{
+    // 	    return callback(results[0].group_id);
+    // 	}
+    // }).catch(function(err){
+    // 	console.log(error);
+    // });
     
 }
 
-//creates connection and tests to make sure connection can be established
-var connectToDatabase = function(port, user, password, dbName){
-    if(port == 3000){
-	throw new Error('Database and Auth Server cannot be hosted on same port!');
-    }
-    
-    var db = new Database({
-	port : port,
-	user : user,
-	password : password,
-	database : dbName
-    });
-
-    return db;
-    
-}
 
 function main(){
-    const server = http.createServer(handleResponse());
-    
-    server.listen(port, function(err){
-	if(err){
-	    return errorHandler('Error: ', err);
-	}
 
-	console.log('Server running on port ' + port);
-    });
-
-
-    var connection = connectToDatabase(3306, 'root', 'a', 'test');
-    getUserGroup(connection, '111', function(data){
-	console.log(data);
+    getUserGroup(111, function(res){
+    	console.log(res);
     });
 
 }
 
 //main();
 
-module.exports.connectToDatabase = connectToDatabase;
 module.exports.getUserGroup = getUserGroup;
 module.exports.addUser = addUser;
 module.exports.validateCredentials = validateCredentials;
