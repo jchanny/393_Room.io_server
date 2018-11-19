@@ -5,102 +5,149 @@ const AuthServer = require('../src/AuthServer/AuthServer.js');
 const expect = require('expect');
 
 
-// describe('Checking test environment is setup correctly.', function(){
-//     var connection = AuthServer.connectToDatabase(3306, 'root', 'a', 'test');
+describe('Checking test environment is setup correctly.', function(){
+    var connection = AuthServer.connectToDatabase(3306, 'root', 'a', 'test');
     
-//     it('Verifying a test database named "test" running on port 3306, root user, password of "a" exists.', function(){
-// 	assert.notEqual(connection, null);
-//     });
+    it('Verifying a test database named "test" running on port 3306, root user, password of "a" exists.', function(){
+	assert.notEqual( null);
+    });
 
-// });
+});
 
-// describe('test validateCredentials()', function(){
+describe('test validateCredentials()', function(){
 
-//     it("Should return error if user_id not int", function(done){
-// 	AuthServer.validateCredentials(connection, "999", "dsf", function(result){
-// 	    assert.equal(result, 'Input argument is of wrong type.');
-// 	    done();
-// 	});
-//     });
+    it("Should return error if user_id not int", function(){
+	AuthServer.validateCredentials("999", "dsf", function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	});
+    });
 
-//     it("Should return error if password not string", function(done){
-// 	AuthServer.validateCredentials(connection, 999, 222, function(result){
-// 	    assert.equal(result, 'Input argument is of wrong type.');
-// 	    done();
-// 	});
-//     });
-    
-//     it("validateCredentials should throw User doesn't exist if user doesn't exist", function(done){
-// 	AuthServer.validateCredentials(connection, 9999, "dsf", function(result){
-// 	    assert.equal(result, "User doesn't exist");
-// 	    done();
-// 	});
-//     });
-
-//     it("Should return true if password and user_id are a match", function(done){
-// 	AuthServer.validateCredentials(connection, 111, "a", function(result){
-// 	    assert.equal(result, true);
-// 	    done();
-// 	});
-//     });
-
-//     it("Should return false if password doesn't match", function(done){
-// 	AuthServer.validateCredentials(connection, 111, "b", function(result){
-// 	    assert.equal(result, false);
-// 	    done();
-// 	});
-//     });
-
-// });
-
-// describe('test addUser()', function(){
-//     it('Error should be thrown if user_id not int', function(done){
-// 	AuthServer.addUser(connection, "1112", 222, "a", function(result){
-// 	    assert.equal(result, 'Input argument is of wrong type.');
-// 	    done();
-// 	});
-//     });
-
-//     it('Error should be thrown if group_id not int', function(done){
-// 	AuthServer.addUser(connection, 1112, "222", "a", function(result){
-// 	    assert.equal(result, 'Input argument is of wrong type.');
-// 	    done();
-// 	});
-//     });
-
-//     it('Error should be thrown if password not string', function(done){
-// 	 AuthServer.addUser(connection, 1112, 222, 1, function(result){
-// 	     assert.equal(result, 'Input argument is of wrong type.');
-// 	     done();
-// 	});
-//     });
-
-//     it('Error should be thrown if user already exists', function(done){
-// 	 AuthServer.addUser(connection, 111, 2222, "a", function(result){
-// 	     assert.equal(result, 'User already exists');
-// 	     done();
-// 	});
-//     });
-
-//     it("User should be successfully added if doesn't exist already", function(done){
-// 	 AuthServer.addUser(connection, 333, 1010, "a", function(result){
-// 	     assert.equal(result, 0);
-// 	     done();
-// 	 });
-//     });
-    
-// });
-
-// describe('test deleteUser()', function(){
-//     it('Error should be thrown if user_id not an int', function(done){
-// 	AuthServer.deleteUser(connection, "333", function(result){
-// 	    assert.equal(result, 'Input argument is of wrong type');
-// 	    done();
-// 	});
-//     });
+    it("Should return error if password not string", function(){
+	AuthServer.validateCredentials(999, 222, function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	});
+    });
 
     
-// });
+    it("validateCredentials should throw User doesn't exist if user doesn't exist", async function(){
+	try{
+	    await AuthServer.validateCredentials(9999, "dsf", function(result){
+		return assert.equal(result, "User doesn't exist");
+	    });
+	}
+	catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    });
+    
+
+    it("should return true if password and user_id are match", async function(){
+	try{
+	    await AuthServer.validateCredentials(111, "a", function(result){
+		return assert.equal(result, true);
+	    });
+	}
+	catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    });
+  
+
+    it("Should return false if password doesn't match", async function(){
+	try{
+    	    await AuthServer.validateCredentials(111, "b", function(result){
+    		return assert.equal(result, false);
+    	    });
+	}
+	catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    });
+
+});
+
+describe('test addUser()', function(){
+    it('Error should be thrown if user_id not int', function(){
+	AuthServer.addUser( "1112", 222, "a", function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	    
+	});
+    });
+
+    it('Error should be thrown if group_id not int', function(){
+	AuthServer.addUser( 1112, "222", "a", function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	    
+	});
+    });
+
+    it('Error should be thrown if password not string', function(){
+	 AuthServer.addUser( 1112, 222, 1, function(result){
+	     assert.equal(result, 'Input argument is of wrong type.');
+	     
+	});
+    });
+
+    it('Error should be thrown if user already exists', async function(){
+	try{
+	await AuthServer.addUser( 111, 2222, "a", function(result){
+	    return assert.equal(result, 'User already exists');
+
+	});
+	}catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    });
+
+    it("User should be successfully added if doesn't exist already", async function(){
+	try{
+	    await AuthServer.addUser( 333, 1010, "a", function(result){
+		return assert.equal(result, 0);
+	    });
+	}catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    });
+    
+});
+
+describe('test deleteUser()', function(){
+    it('Error should be thrown if user_id not an int', function(){
+	AuthServer.deleteUser( "333", function(result){
+	    assert.equal(result, 'Input argument is of wrong type');
+	    
+	});
+    });
+
+    it('0 should be returned if user deleted successfully', async function(){
+	try{
+	    await AuthServer.deleteUser(333, function(result){
+		return assert.equal(result, 0);
+	    });
+	}catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+	    
+    });
+
+    it('1 should be returned if attempt to delete nonexistent user', async function(){
+	try{
+	    await AuthServer.deleteUser(4444, function(result){
+		return assert.equal(result, 0);
+	    });
+	}catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    });
+    
+ });
 
  describe('test getUserGroup()', function(){
 
@@ -115,57 +162,27 @@ const expect = require('expect');
 	     return assert.fail();
 	 }
      });
-	
-//     it("getUserGroup() should not be able to be called if no database connection exists", function(done){
-//     	done();
-     
-//     });
 
-	 
+     it("should return 'User does not exist' if user doesn't exist", async function(){
+	 try{
+	     await AuthServer.getUserGroup(22229, function(results){
+		 return assert.equal(results, 'User does not exist');
+	     });
+	 }
+	 catch(err){
+	     console.log(err);
+	      return assert.fail();
+	 }
+     });
 
-//     it("getUserGroup() should return User does not exist if user_id not in database", function(done){
-//     	return AuthServer.getUserGroup(connection, 0000222, function(result){
-//     	    assert.equals(result, 'User does not exist');
-//     	    done();
-//     	});
-//     });
 
-//     it("getUserGroup() should not accept invalid input.", function(done){
-//     	return AuthServer.getUserGroup(connection, '111', function(result){
-//     	    assert.equal(result, 'Input argument is of wrong type.');
-//     	    done();
-//     	});
-//     })
+    it("getUserGroup() should not accept invalid input.", function(){
+    	return AuthServer.getUserGroup('111', function(result){
+    	    assert.equal(result, 'Input argument is of wrong type.');
+    	});
+    })
 
  });
-
-// describe('test connectToDatabase()', function(){
-    
-//     it('Should not accept port number that is same as server', function(done){
-// 	//need to wrap around a function if checking throw value
-// 	assert.throws(function(){
-// 	    AuthServer.connectToDatabase(3000, 'root', 'a', 'test');
-// 	},Error, 'Database and Auth Server cannot be hosted on same port!');
-// 	done();
-	
-//     });
-
-//     //need to figure out how to correctly throw
-//     it("Should throw error if database doesn't exist", function(done){
-// 	done();
-	
-//     });
-
-//     it("Should throw error if login credentials don't exist", function(done){
-// 	done();
-	
-//     });
-
-//     it("Should throw error if AuthDatabase doesn't exist", function(done){
-// 	done();
-//     });
-    
-// });
 
 
 
