@@ -157,7 +157,7 @@ describe('test deleteUser()', function(){
     it('1 should be returned if attempt to delete nonexistent user', async function(){
 	try{
 	    await AuthServer.deleteUser(4444, function(result){
-		return assert.equal(result, 0);
+		return assert.equal(result, 1);
 	    });
 	}catch(err){
 	    console.log(err);

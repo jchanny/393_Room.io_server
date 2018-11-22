@@ -43,25 +43,26 @@ async function createNewUser(user_id, password, email, name, group_id){
     }
 }
 
-function fetchGroupData(group_id){
-    return {};
-}
-
-function fetchData(user_id, group_id){
+async function fetchGroupData(group_id){
+    if(typeof group_id != 'number')
+	return 'Input argument is of wrong type.';
     
+    var result = await MongoClient.connect(connStr, function(err, client){
+	if(err) throw err;
+	
+	const db = client.db('test');
+	
+	db.collection("OperationalDatabase").find({"group_id" : group_id}, function(error, result){
+	    if(error) throw error;
+	    client.close();
+	    
+	    return result;
+	});
+    });
+
+    return result;
 }
 
-function pushData(group_id){
-}
-
-function getGroupMembers(group_id){
-}
-
-function addUserToGroup(user_id, group_id){
-}
-
-function removeUserFromGroup(user_id, group_id){
-}
 
 //returns user data json field 
 async function getUserData(user_id){
@@ -76,10 +77,10 @@ async function getUserData(user_id){
 	return 'User does not exist';
     }
 
-    var groupData = fetchGroupData(group);
+    var groupData = await fetchGroupData(group);
     
     var memberDataList = groupData[members];
-    return memberDataList.find(x => x.user_id === user_id);
+    return memberDataList.find(x => x["user_id"] === user_id);
     
 }
 
@@ -116,41 +117,12 @@ async function createGroup(group_owner, group_id, group_name){
     });
 }
 
-function deleteGroup(group_owner, group_id){
-}
 
-function sendDataToClients(group_id){
-}
-
-
-function processRequest(request, response){
-
-    //	var operation = ;
-    //	switch(operation){
-    //	case '':
-    
-    //		break;
-    //	}
-}
-
-function handleResponse(request, response){
-    processRequest(request);
-}
-
-function main(){
-    const server = http.createServer(handleResponse());
-
-    server.listen(port, function(err){
-	if(err){
-	    return errorHandler('Error: ', err);
-	}
-	console.log('Server running on port ' + port);
-    });
-}
 
 
 
 module.exports.checkCredentials = checkCredentials;
 module.exports.createNewUser = createNewUser;
+module.exports.fetchGroupData = fetchGroupData;
 module.exports.getUserData = getUserData;
 module.exports.createGroup = createGroup;

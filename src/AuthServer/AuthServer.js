@@ -15,14 +15,6 @@ const defaultDBObject = {
 const port = 3000;
 const INVALID_ARGUMENT_TYPE = 'Input argument is of wrong type.';
 
-function errorCallback(err){
-    throw err;
-}
-
-function errorHandler(message, err){
-    console.log(message + err);
-}
-
 //returns true if user exists, false otherwise
 async function checkIfUserExists(user_id){
     if(typeof user_id != 'number')
@@ -82,13 +74,17 @@ async function getUserGroup(user_id, callback){
 }
 
 //adds user to to Auth Database
-//Assumption: Auth Database was set up correctly and will only allow unique entries to be added
 //0 will be returned if successful
 async function addUser(user_id, group_id, password, callback){
     if(typeof user_id != 'number' || typeof group_id != 'number' || typeof password != 'string')
-	return callback(INVALID_ARGUMENT_TYPE);
+	return INVALID_ARGUMENT_TYPE;
 
     var db = new Database(defaultDBObject);
+
+    var userExists = await checkIfUserExists(user_id);
+
+    if(userExists)
+	return callback('User already exists');
     
     var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
 
@@ -102,30 +98,21 @@ async function addUser(user_id, group_id, password, callback){
 //returns 1 if user doens't exist, 0 if deletion was successful
 async function deleteUser(user_id, callback){
     if(typeof user_id != 'number')
-	return callback(INVALID_ARGUMENT_TYPE);
+	return INVALID_ARGUMENT_TYPE;
 
     var db = new Database(defaultDBObject);
+    var userExists = await checkIfUserExists(user_id);
+    if(!userExists)
+	return callback(1);
     
     var result = await db.query('DELETE FROM AuthDatabase WHERE user_id = ?', [user_id]);
 
     db.close();
     
-    if(result.length == 0)
-	return callback(1);
-    else
-	return callback(0);
+    return callback(0);
     
 }
 
-function main(){
-
-    getUserGroup(111, function(res){
-    	console.log(res);
-    });
-
-}
-
-//main();
 
 module.exports.getUserGroup = getUserGroup;
 module.exports.addUser = addUser;

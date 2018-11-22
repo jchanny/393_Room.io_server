@@ -71,6 +71,22 @@ describe('test createNewUser()', function(){
     
 });
 
+describe('test fetchGroupData()', function(){
+    it('should throw error if type of user_id not int', function(){
+	var result = OpServer.getUserData("111");
+	assert.equal(result, 'Input argument is of wrong type.');
+    });
+
+    it('Should return group does not exist if group not found',async function(){
+	try{
+	    assert.fail();
+	}catch(err){
+	    console.log(err);
+	    assert.fail();
+	}
+    });
+});
+
 describe('test getUserData()', function(){
     it('should throw error if type of user_id not int', function(){
 	var result = OpServer.getUserData("1111");
@@ -86,6 +102,19 @@ describe('test getUserData()', function(){
 	    return assert.fail();
 	}
     });
+
+    it('should return the user data', async function(){
+	try{
+	    var results = await OpServer.getUserData(666);
+	    return assert.equal(results, 
+		{ "user_id" : 666, "member_group_id" : 666, "admined_group_id" : 666, "involved_tabs" : [ ], "notifications" : [ ] } 
+	    );
+	}
+	catch(err){
+	    console.log(err);
+	    return assert.fail();
+	}
+    })
 
 });
 
