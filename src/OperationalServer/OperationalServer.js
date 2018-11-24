@@ -5,14 +5,15 @@ const mongoPort = 27017;
 const MongoClient = require('mongodb').MongoClient;
 const connStr = 'mongodb://localhost:27017';
 
-
 //returns true if user_id, password match a user in Auth Database
 async function checkCredentials(user_id, password){
     if(typeof user_id != 'string' || typeof password != 'string')
 	return 'Input argument is of wrong type';
     
    return await AuthServer.validateCredentials(user_id, password, function(res){
-	try{
+       try{
+	   if(res === "User doesn't exist")
+	       return "User doesn't exist";
 	    if(res === true)
 		return true;
 	    else
@@ -24,7 +25,7 @@ async function checkCredentials(user_id, password){
 }
 
 //adds new user to the Auth Database and creates a new user JSON field
-async function createNewUser(user_id, password, email, name, group_id){
+async function createNewUser(user_id, password, group_id){
     if(typeof user_id != 'string' || typeof password != 'string' || typeof group_id != 'string')
 	return 'Input argument is of wrong type';
 
@@ -41,6 +42,18 @@ async function createNewUser(user_id, password, email, name, group_id){
     else{
 	return console.log('An error occured.');
     }
+}
+
+//main function that handles user registration
+async function registerUser(user_id, password, group_id, name, email){
+    
+}
+
+//main function that handles user login, fetches data
+async function loginUser(user_id, password){
+    //check credentials
+    
+    //fetch group Data
 }
 
 // async function fetchGroupData(group_id){
@@ -123,6 +136,6 @@ async function createNewUser(user_id, password, email, name, group_id){
 
 module.exports.checkCredentials = checkCredentials;
 module.exports.createNewUser = createNewUser;
-module.exports.fetchGroupData = fetchGroupData;
-module.exports.getUserData = getUserData;
-module.exports.createGroup = createGroup;
+//module.exports.fetchGroupData = fetchGroupData;
+//module.exports.getUserData = getUserData;
+//module.exports.createGroup = createGroup;

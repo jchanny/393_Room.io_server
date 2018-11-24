@@ -31,7 +31,6 @@ describe('test checkIfUserExists()', function(){
 
     it("Should return false if user doesn't exist", async function(){
 	try{
-	    await setUpEnvironment;
 	    var result = await AuthServer.checkIfUserExists("999999");
 	    return assert.equal(result, false);
 	}catch(err){

@@ -79,17 +79,26 @@ async function addUser(user_id, group_id, password, callback){
 	return callback(INVALID_ARGUMENT_TYPE);
 
     var db = new Database(defaultDBObject);
-
-    var userExists = await checkIfUserExists(user_id);
-
-    if(userExists)
-	return callback('User already exists');
     
-    var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
-
-    db.close();
-    
-    return callback(0);
+    try{
+	var userExists = await checkIfUserExists(user_id);
+	console.log("user exists" + userExists);
+	if(userExists){
+	    db.close();
+	    return callback('User already exists');
+	}
+	else{
+	    var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
+	    
+	    db.close();
+	    
+	    return callback(0);
+	}
+    }
+    catch(err){
+	console.log(err);
+	throw new Error();
+    }
     
 }
 
