@@ -82,7 +82,6 @@ async function addUser(user_id, group_id, password, callback){
     
     try{
 	var userExists = await checkIfUserExists(user_id);
-	console.log("user exists" + userExists);
 	if(userExists){
 	    db.close();
 	    return callback('User already exists');
@@ -97,7 +96,6 @@ async function addUser(user_id, group_id, password, callback){
     }
     catch(err){
 	console.log(err);
-	throw new Error();
     }
     
 }
