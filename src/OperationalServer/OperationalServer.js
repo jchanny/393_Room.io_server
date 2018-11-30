@@ -65,137 +65,114 @@ async function fetchGroupData(group_id, callback){
     
 }
 
-
+//function adds user to AuthDB and adds appropriate fields to OperationalDB
 async function registerUser(user_id, password, group_id, name, email){
-    return await createNewUser(user_id, password, group_id, async function(result){
-	
-	var userDataObj = {
-	    user_id : user_id,
-	    name : name,
-	    email : email,
-	    member_group_id : group_id,
-	    involved_tabs : [],
-	    notifications : []
-	};
 
-	var groupObject = {
-	    group_id : group_id,
-	    group_admin_user_id : user_id,
-	    members : [userDataObj],
-	    groupTasks : [],
-	    messages : []
-	};
-	
-	await MongoClient.connect(connStr, function(err,client){
-	    if(err) throw err;
+    if(typeof user_id!= 'string' || typeof password != 'string' || typeof group_id != 'string' || typeof name != 'string' || typeof email != 'string')
+	return 'Input argument is of wrong type';
+    
+    //add user to authDB
+    var result = await createNewUser(user_id, password, group_id, async function(result){
 
-	    const db = client.db('test');
-	    db.collection("OperationalDatabase").insertOne(groupObject, function(error, results){
-		if(error) throw error;
-		else
-		    client.close();
+	if(result !== 'User added successfully.'){
+	    return 'User already exists.';
+	}
+    });
+
+    //check to make sure user doesn't exist
+    if(result === 'User already exists.')
+	return 'User already exists.';
+    
+    var userDataObj = {
+	user_id : user_id,
+	name : name,
+	email : email,
+	member_group_id : group_id,
+	involved_tabs : [],
+	notifications : []
+    };
+
+    //check if group already exists
+   return await fetchGroupData(group_id, function(groupPayload){
+	var groupObject;
+
+	//if group exists
+	if(groupPayload){
+	    groupObject = groupPayload;
+	    groupObject.members.push(userDataObj);
+	    MongoClient.connect(connStr, function(err,client){
+		if(err) throw err;
+
+		const db = client.db('test');
+		//replace document
+		db.collection("OperationalDatabase").remove({group_id : group_id});
+		db.collection("OperationalDatabase").insertOne(groupObject, function(error, results){
+		    if(error) throw error;
+		    else
+			client.close();
+		});
+		
 	    });
-	    
-	});
+	}
+       else{
+	   //create new group
+	    groupObject = {
+		group_id : group_id,
+		group_admin_user_id : user_id,
+		members : [userDataObj],
+		groupTasks : [],
+		messages : []
+	    };
 
+	    MongoClient.connect(connStr, function(err,client){
+		if(err) throw err;
+
+		const db = client.db('test');
+		db.collection("OperationalDatabase").insertOne(groupObject, function(error, results){
+		    if(error) throw error;
+		    else
+			client.close();
+		});		
+	    });	    
+	}		
     });
     
 }
 
-//main function that handles user registration
-// //writes response to socket
-// async function registerUser(user_id, password, group_id, name, email){
-  
-//     try{
-// 	var response = await createNewUser(user_id, password, group_id);
 
-// 	if(response === 'User already exists, please select another username.'){
-// 	    //respond with user already exists
-// 	}
-// 	else if(response === 'User added successfully.'){
-// 	    var userDataObj = {
-// 		user_id : user_id,
-// 		name : name,
-// 		email : email,
-// 		member_group_id : group_id,
-// 		involved_tabs : [],
-// 		notifications : []
-// 	    };
-
-// 	    var groupObject = await fetchGroupData(group_id);
-
-// 	    //if group_id is new
-// 	    if(groupObject === {}){
-// 		groupObject =  {
-// 		    group_id : group_id,
-// 		    group_admin_user_id : user_id,
-// 		    members : [userDataObj],
-// 		    groupTasks : [],
-// 		    messages : []
-// 		};
-		
-// 	    }
-// 	    else{
-// 		groupObject.members.push(userDataObj);
-// 	    }
-
-// 	    //write to OpDB
-// 	    await MongoClient.connect(connStr, function(err,client){
-// 		if(err) throw err;
-
-// 		const db = client.db('test');
-// 		db.collection("OperationalDatabase").insertOne(groupObject, function(error, result){
-// 		    if(error) throw error;
-// 		    client.close();
-// 		    return result;
-// 		});
-// 	    });
-
-// 	    return groupObject;
-// 	}
-//     }
-//     catch(err)
-//     {
-// 	//respond with server error occured
-//     }
-// }
 
 //main function that handles user login, fetches data
-async function loginUser(user_id, password){
-    //check credentials
+//use callback to capture group data payload
+async function loginUser(user_id, password, callback){
+    var result = await checkCredentials(user_id, password);
+
+    if(result === "User doesn't exist"){
+	return callback("User doesn't exist.");
+    }
+     if(result === false)
+	 return callback("Invalid credentials.");
     
-    //fetch group Data
+    //find user group
+    var group;
+    await AuthServer.getUserGroup(user_id, function(res){
+	group = res;
+    });
+    return await fetchGroupData(group, function(result){
+	callback(result);
+    });
+    
 }
 
-async function main(){
-    var result = await fetchGroupData("test", function(res){console.log(res);});
- 
+async function runServer(){
+    var res = await loginUser("test", "f", function(res){
+	console.log(res);
+    });
 }
-main();
-// //returns user data json field 
-// async function getUserData(user_id){
-//     if(typeof user_id != 'string')
-// 	return 'Input argument is of wrong type';
-
-//     var group = await AuthServer.getUserGroup(user_id, function(results){
-// 	return results;
-//     });
-
-//     if(group == 'User does not exist'){
-// 	return 'User does not exist';
-//     }
-
-//     var groupData = await fetchGroupData(group);
-
-//     var memberDataList = groupData[members];
-//     return memberDataList.find(x => x["user_id"] === user_id);
-
-// }
 
 
 module.exports.checkCredentials = checkCredentials;
 module.exports.createNewUser = createNewUser;
 module.exports.fetchGroupData = fetchGroupData;
 module.exports.registerUser = registerUser;
-//module.exports.getUserData = getUserData;
-//module.exports.createGroup = createGroup;
+module.exports.loginUser = loginUser;
+
