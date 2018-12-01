@@ -6,18 +6,18 @@ const MongoClient = require('mongodb').MongoClient;
 const connStr = 'mongodb://localhost:27017';
 
 //returns true if user_id, password match a user in Auth Database
-async function checkCredentials(user_id, password){
+async function checkCredentials(user_id, password,callback){
     if(typeof user_id != 'string' || typeof password != 'string')
-	return 'Input argument is of wrong type';
+	return callback('Input argument is of wrong type');
     
     return await AuthServer.validateCredentials(user_id, password, function(res){
 	try{
 	    if(res === "User doesn't exist")
-		return "User doesn't exist";
+		return callback("User doesn't exist");
 	    if(res === true)
-		return true;
+		return callback(true);
 	    else
-		return false;
+		return callback(false);
 	}catch(err){
 	    throw new Error(err);
 	}
@@ -27,11 +27,11 @@ async function checkCredentials(user_id, password){
 //adds new user to the Auth Database and creates a new user JSON field
 async function createNewUser(user_id, password, group_id, callback){
     if(typeof user_id != 'string' || typeof password != 'string' || typeof group_id != 'string')
-	return 'Input argument is of wrong type';
+	return callback('Input argument is of wrong type');
 
     var doesUserAlreadyExist = await AuthServer.checkIfUserExists(user_id);
     if(doesUserAlreadyExist){
-	return 'User already exists, please select another username.';
+	return callback('User already exists, please select another username.');
     }
 
     var successAdd = await AuthServer.addUser(user_id, group_id, password, function(result){return result;});
@@ -48,14 +48,14 @@ async function createNewUser(user_id, password, group_id, callback){
 //need to specify a callback to store return value
 async function fetchGroupData(group_id, callback){
     if(typeof group_id != 'string')
-	return 'Input argument is of wrong type.';
+	return callback('Input argument is of wrong type.');
 
     return await MongoClient.connect(connStr, function(err, client){
 	if(err) throw err;
 	
 	const db = client.db('test');
 	
-	var res =  db.collection("OperationalDatabase").find({group_id : group_id}).toArray(function(error, result){
+	db.collection("OperationalDatabase").find({group_id : group_id}).toArray(function(error, result){
 	    if(error) throw error;
 	    client.close();
 	    callback(result[0]);
@@ -66,22 +66,22 @@ async function fetchGroupData(group_id, callback){
 }
 
 //function adds user to AuthDB and adds appropriate fields to OperationalDB
-async function registerUser(user_id, password, group_id, name, email){
+async function registerUser(user_id, password, group_id, name, email, callback){
 
     if(typeof user_id!= 'string' || typeof password != 'string' || typeof group_id != 'string' || typeof name != 'string' || typeof email != 'string')
-	return 'Input argument is of wrong type';
+	return callback('Input argument is of wrong type');
     
     //add user to authDB
     var result = await createNewUser(user_id, password, group_id, async function(result){
 
 	if(result !== 'User added successfully.'){
-	    return 'User already exists.';
+	    return callback('User already exists.');
 	}
     });
 
     //check to make sure user doesn't exist
     if(result === 'User already exists.')
-	return 'User already exists.';
+	return callback('User already exists.');
     
     var userDataObj = {
 	user_id : user_id,
@@ -97,7 +97,7 @@ async function registerUser(user_id, password, group_id, name, email){
 	var groupObject;
 
 	//if group exists
-	if(groupPayload){
+	if(groupPayload !== 'Group data not found'){
 	    groupObject = groupPayload;
 	    groupObject.members.push(userDataObj);
 	    MongoClient.connect(connStr, function(err,client){
@@ -162,13 +162,6 @@ async function loginUser(user_id, password, callback){
     });
     
 }
-
-async function runServer(){
-    var res = await loginUser("test", "f", function(res){
-	console.log(res);
-    });
-}
-
 
 module.exports.checkCredentials = checkCredentials;
 module.exports.createNewUser = createNewUser;

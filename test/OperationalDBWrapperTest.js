@@ -1,9 +1,10 @@
 const assert = require('assert');
 const AuthServer = require('../src/AuthServer/AuthServer.js');
-const OpServer = require('../src/OperationalServer/OperationalServer.js');
+const OpServer = require('../src/OperationalServer/OperationalDBWrapper.js');
 const MongoClient = require('mongodb').MongoClient;
 const connStr = 'mongodb://localhost:27017';
 
+//set up test environment, add user called Bob, group 
 describe('test checkCredentials()' ,function(){
     it("Should return error if user_id not string", function(){
 	OpServer.checkCredentials(11111, "aaaas", function(result){
@@ -95,70 +96,64 @@ describe('test createNewUser()', function(){
     
 });
 
-describe('test fetchGroupData', function(){
-    it('return error if group_id is not string', async function(){
-	var result = await OpServer.fetchGroupData(1112);
-	return assert.equal(result, 'Input argument is of wrong type.');
-    });
-
-    it('returns {} if group_id does not correspond to valid group', async function(){
-	var result = await OpServer.fetchGroupData("bob");
-	console.log(result);
-    });
-
-    it('returns correct group data if group corresponds to valid group', async function(){
-	var testObj = {
-		group_id : "bobson",
-		group_admin_user_id : "999",
-		members : [{user_id : "999"}],
-		groupTasks : [],
-		messages : []
-	};
-	
-	await MongoClient.connect(connStr, function(err, client){
-	    db.collection("OperationalDatabase").insertOne(testObj);
-
-	    client.close();
+describe('test registerUser', function(){
+    it('return error if user_id not string', function(){
+	return OpServer.registerUser(999, "222", "2222", "bob","d", function(result){
+	    return assert.equal(result, 'Input argument is of wrong type');
 	});
 
-	var result = await OpServer.fetchGroupData("bobson");
-	return assert.equal(result, testObj);
+    });
+
+    it('return error if password not string', function(){
+	return OpServer.registerUser("fsdf",222,"2222","bob","d", function(result){
+	    return assert.equal(result, 'Input argument is of wrong type');
+	});
+
+    });
+
+    it('return error if group_id not string', function(){
+	return OpServer.registerUser("fsdf","222",2222,"bob","d", function(result){
+	    return assert.equal(result, 'Input argument is of wrong type');
+	});
+
+    });
+
+    it('return error if name not string', function(){
+	return OpServer.registerUser("fsdf","222",2222,"bob","d", function(result){
+	    return assert.equal(result, 'Input argument is of wrong type');
+	});
+
+    });
+
+    it('return error if email not string', function(){
+	return OpServer.registerUser("fsdf","222","2222","bob", false, function(result){
+	    return assert.equal(result, 'Input argument is of wrong type');
+	});
+
+    });
+
+    it('Should check if user already exists', async function(){
+	var result = await OpServer.registerUser("111", "a", "2222", "bob","test");
+	return assert.equal(result, 'User already exists.');
     });
 });
 
-describe('test registerUser', function(){
-    it('return that input arg is wrong type if user_id not string', function(){
-	assert.fail();
-    });
-
-    it('return input arg is wrong if password not string', function(){
-	assert.fail();
-    });
-
-    it('return input arg is wrong if group_id not string', function(){
-	assert.fail();
-    });
-
-    it('return user already exists if user_id not unique', function(){
-    });
-    
-    describe('Create new group w/user as admin if group_id does not already exist', function(){
-	it('there should be no other members in this group', function(){
+describe('test fetchGroupData', function(){
+    it('return error if group_id is not string', function(){
+	return OpServer.fetchGroupData(1112, function(result){
+    	    assert.equal(result, 'Input argument is of wrong type.');
 	});
 
-	it('user should be admin of the group', function(){
-	});
-
-	assert.fail();
     });
 
-    describe('Add user data to an existing group if it already exists', function(){
-	it('number of keys of the groupData object should not have changed', function(){
+    it('returns {} if group_id does not correspond to valid group', async function(){
+	return await OpServer.fetchGroupData("bob", function(result){
+	    return assert.equal(result, 'undefined');
 	});
+    });
+
+    it('returns correct group data if group corresponds to valid group', async function(){
 	
-	it('new user data should be added', function(){
-	    //check that members[1] is there
-	});
     });
 });
 
