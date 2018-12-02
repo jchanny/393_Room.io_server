@@ -88,6 +88,29 @@ app.post('/users/login', async function(req, res){
     
 });
 
+//retrieve group data
+app.get('/groups/*', async function(req, res){
+    var fullPath = req.path;
+    var groupId = fullPath.split('/groups/').pop();
+
+    try{
+	await OpServer.fetchGroupData(groupId, function(result){
+	    if(result){
+		res.statusCode = 200;
+		res.setHeader('Content-Type','application/json');
+		res.send(JSON.stringify(result));	    
+	    }else{
+		res.statusCode = 404;
+		res.send("Group doesn't exist.");
+	    }
+	});
+    }
+    catch(e){
+	console.log(e);
+    }
+	
+});
+
 app.listen(port, '0.0.0.0',() =>{
     console.log("Server running on port %s", port);
 });
