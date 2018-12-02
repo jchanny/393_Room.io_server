@@ -8,12 +8,12 @@ const connStr = 'mongodb://localhost:27017';
 describe('test checkCredentials()' ,function(){
     it("Should return error if user_id not string", function(){
 	OpServer.checkCredentials(11111, "aaaas", function(result){
-	    assert.equal(result, 'Input argument is of wrong type.');
+	   return assert.equal(result, 'Input argument is of wrong type.');
 	});
     });
 
     it("Should return error if password not string", function(){
-	OpServer.checkCredentials("1111", 11, function(result){
+	 OpServer.checkCredentials("1111", 11, function(result){
 	    assert.equal(result, 'Input argument is of wrong type.');
 	});
     });

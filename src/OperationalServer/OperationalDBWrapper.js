@@ -82,7 +82,7 @@ async function registerUser(user_id, password, group_id, name, email, callback){
     //check to make sure user doesn't exist
     if(result === 'User already exists.')
 	return callback('User already exists.');
-    
+   
     var userDataObj = {
 	user_id : user_id,
 	name : name,
@@ -97,7 +97,7 @@ async function registerUser(user_id, password, group_id, name, email, callback){
 	var groupObject;
 
 	//if group exists
-	if(groupPayload !== 'Group data not found'){
+	if(groupPayload){
 	    groupObject = groupPayload;
 	    groupObject.members.push(userDataObj);
 	    MongoClient.connect(connStr, function(err,client){
