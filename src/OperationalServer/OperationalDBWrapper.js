@@ -65,6 +65,25 @@ async function fetchGroupData(group_id, callback){
     
 }
 
+//for modifying groupdata
+async function modifyGroupData(group_id, payload, callback){
+    if(payload){
+	return await MongoClient.connect(connStr, function(err, client){
+	    if(err) throw err;
+	    const db = client.db('test');
+
+	    db.collection("OperationalDatabase").remove({group_id : group_id});
+	    db.collection("OperationalDatabase").insertOne(payload, function(err, results){
+		if(err) throw error;
+		client.close();
+		callback('Success');
+	    });
+	});
+    }
+    else
+	return callback('No payload.');
+}
+
 //function adds user to AuthDB and adds appropriate fields to OperationalDB
 async function registerUser(user_id, password, group_id, name, email, callback){
 
@@ -168,4 +187,4 @@ module.exports.createNewUser = createNewUser;
 module.exports.fetchGroupData = fetchGroupData;
 module.exports.registerUser = registerUser;
 module.exports.loginUser = loginUser;
-
+module.exports.modifyGroupData = modifyGroupData;
