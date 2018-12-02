@@ -8,7 +8,7 @@ const connStr = 'mongodb://localhost:27017';
 //returns true if user_id, password match a user in Auth Database
 async function checkCredentials(user_id, password,callback){
     if(typeof user_id != 'string' || typeof password != 'string')
-	return callback('Input argument is of wrong type');
+	return callback('Input argument is of wrong type.');
     
     return await AuthServer.validateCredentials(user_id, password, function(res){
 	try{
@@ -27,12 +27,14 @@ async function checkCredentials(user_id, password,callback){
 //adds new user to the Auth Database and creates a new user JSON field
 async function createNewUser(user_id, password, group_id, callback){
     if(typeof user_id != 'string' || typeof password != 'string' || typeof group_id != 'string')
-	return callback('Input argument is of wrong type');
+	return callback('Input argument is of wrong type.');
 
-    var doesUserAlreadyExist = await AuthServer.checkIfUserExists(user_id);
-    if(doesUserAlreadyExist){
-	return callback('User already exists, please select another username.');
-    }
+    var doesUserExist = await AuthServer.checkIfUserExists(user_id, function(result){
+	return result;
+    });
+
+    if(doesUserExist)
+	return callback('User already exists.');
 
     var successAdd = await AuthServer.addUser(user_id, group_id, password, function(result){return result;});
 
@@ -40,7 +42,7 @@ async function createNewUser(user_id, password, group_id, callback){
     	return callback('User added successfully.');
     }
     else{
-    	return console.log('An error occured.');
+    	return callback('An error occured.');
     }
 }
 
@@ -88,14 +90,11 @@ async function modifyGroupData(group_id, payload, callback){
 async function registerUser(user_id, password, group_id, name, email, callback){
 
     if(typeof user_id!= 'string' || typeof password != 'string' || typeof group_id != 'string' || typeof name != 'string' || typeof email != 'string')
-	return callback('Input argument is of wrong type');
+	return callback('Input argument is of wrong type.');
     
     //add user to authDB
     var result = await createNewUser(user_id, password, group_id, async function(result){
-
-	if(result !== 'User added successfully.'){
-	    return callback('User already exists.');
-	}
+	return result;
     });
 
     //check to make sure user doesn't exist
@@ -132,6 +131,7 @@ async function registerUser(user_id, password, group_id, name, email, callback){
 		});
 		
 	    });
+	    return callback('');
 	}
        else{
 	   //create new group
@@ -152,10 +152,12 @@ async function registerUser(user_id, password, group_id, name, email, callback){
 		    else
 			client.close();
 		});		
-	    });	    
+	    });
+	   return callback('');
 	}		
     });
-    
+
+    return callback('Does not matter.');
 }
 
 

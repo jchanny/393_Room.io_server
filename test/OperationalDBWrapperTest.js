@@ -20,8 +20,10 @@ describe('test checkCredentials()' ,function(){
 
     it("Should return true if credentials are valid", async function(){
 	try{
-	    var result = await OpServer.checkCredentials("111", "a");
-	    return assert.equal(result, true);
+	    await OpServer.checkCredentials("111", "a", function(result){
+		return assert.equal(result, true);
+	    });
+
 	}
 	catch(err){
 	    console.log(err);
@@ -31,8 +33,10 @@ describe('test checkCredentials()' ,function(){
 
     it("Should return false if credentials are not valid", async function(){
 	try{
-	    var result = await OpServer.checkCredentials("111", "b");
-	    return assert.equal(result, false);
+	    await OpServer.checkCredentials("111", "b", function(result){
+		return assert.equal(result, false);
+	    });
+
 	}
 	catch(err){
 	    console.log(err);
@@ -42,8 +46,10 @@ describe('test checkCredentials()' ,function(){
 
     it("Should return user doesn't exist if user doesn't exist", async function(){
 	try{
-	    var result = await OpServer.checkCredentials("999", "a");
-	    return assert.equal(result, "User doesn't exist");
+	    await OpServer.checkCredentials("999", "a", function(result){
+		return assert.equal(result, "User doesn't exist");
+	    });
+
 	}catch(err){
 	    console.log(err);
 	    return assert.fail();
@@ -72,8 +78,10 @@ describe('test createNewUser()', function(){
 
     it('Should return error if username already exists', async function(){
 	try{
-	    var result = await OpServer.createNewUser("111", "fdsd", "2222");
-	    return assert.equal(result, 'User already exists, please select another username.');
+	     await OpServer.createNewUser("111", "fdsd", "2222", function(result){
+		return assert.equal(result, 'User already exists, please select another username.');
+	    });
+
 	}
 	catch(err){
 	    console.log(err);
@@ -84,9 +92,13 @@ describe('test createNewUser()', function(){
 
     it('Should add user to AuthDatabase if unique user_id', async function(){
 	try{
-	    await OpServer.createNewUser("333", "fff", "bob");
-	    var result = await AuthServer.checkIfUserExists("333");
-	    return assert.equal(result, true);
+	    await OpServer.createNewUser("333", "fff", "bob", async function(result){
+		await AuthServer.checkIfUserExists("333", function(result){
+	    	    return assert.equal(result, true);
+		});
+		
+	    });
+
 	}
 	catch(err){
 	    console.log(err);
@@ -99,35 +111,35 @@ describe('test createNewUser()', function(){
 describe('test registerUser', function(){
     it('return error if user_id not string', function(){
 	return OpServer.registerUser(999, "222", "2222", "bob","d", function(result){
-	    return assert.equal(result, 'Input argument is of wrong type');
+	    return assert.equal(result, 'Input argument is of wrong type.');
 	});
 
     });
 
     it('return error if password not string', function(){
 	return OpServer.registerUser("fsdf",222,"2222","bob","d", function(result){
-	    return assert.equal(result, 'Input argument is of wrong type');
+	    return assert.equal(result, 'Input argument is of wrong type.');
 	});
 
     });
 
     it('return error if group_id not string', function(){
 	return OpServer.registerUser("fsdf","222",2222,"bob","d", function(result){
-	    return assert.equal(result, 'Input argument is of wrong type');
+	    return assert.equal(result, 'Input argument is of wrong type.');
 	});
 
     });
 
     it('return error if name not string', function(){
 	return OpServer.registerUser("fsdf","222",2222,"bob","d", function(result){
-	    return assert.equal(result, 'Input argument is of wrong type');
+	    return assert.equal(result, 'Input argument is of wrong type.');
 	});
 
     });
 
     it('return error if email not string', function(){
 	return OpServer.registerUser("fsdf","222","2222","bob", false, function(result){
-	    return assert.equal(result, 'Input argument is of wrong type');
+	    return assert.equal(result, 'Input argument is of wrong type.');
 	});
 
     });

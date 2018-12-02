@@ -4,12 +4,13 @@ const express = require('express');
 const port = 7070;
 const app = express();
 const bodyParser = require('body-parser');
+const AuthServer = require('../AuthServer/AuthServer.js');
 
 app.use(bodyParser.json());
 
 //test function to confirm that server is running
 app.get('/test', function(req, res){
-    res.send('<h1> Hello Christopher </h1>');
+    res.send('<h1> UwU hewwo there </h1>');
 });
 
 //create new user
@@ -32,6 +33,7 @@ app.post('/newusers', async function(req, res){
 		res.send();
 	    }
 	});
+	return;
     }
     catch(e){
 	console.log(e);
@@ -65,19 +67,24 @@ app.post('/users/login', async function(req, res){
     var password = postData.password;
     
     try{
-	await OpServer.checkCredentials(username, password, function(result){
-	    if(result === "User doesn't exist"){
+	await OpServer.checkCredentials(username, password,async function(result){
+	    if(result === false || result === "User doesn't exist"){
 		res.statusCode = 404;
-		res.send("User doesn't exist");
+		res.send("Invalid credentials.");
 	    }
 	    else if(result === true){
-		res.statusCode = 200;
-		res.send();
 		//now return groupData
-	    }
-	    else{
-		res.statusCode = 401;
-		res.send();
+		AuthServer.getUserGroup(username,async function(id){
+		    var groupId = id;
+		    await OpServer.fetchGroupData(groupId, function(result){
+			if(result){
+			    res.statusCode = 200;
+			    res.setHeader('Content-Type','application/json');
+			    res.send(JSON.stringify(result));	    
+			}
+		    });
+		});
+		
 	    }
 	    
 	});

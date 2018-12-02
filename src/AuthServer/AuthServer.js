@@ -16,7 +16,7 @@ const port = 3000;
 const INVALID_ARGUMENT_TYPE = 'Input argument is of wrong type.';
 
 //returns true if user exists, false otherwise
-async function checkIfUserExists(user_id){
+async function checkIfUserExists(user_id, callback){
     if(typeof user_id != 'string')
 	return callback(INVALID_ARGUMENT_TYPE);
     
@@ -81,18 +81,19 @@ async function addUser(user_id, group_id, password, callback){
     var db = new Database(defaultDBObject);
     
     try{
-	var userExists = await checkIfUserExists(user_id);
-	if(userExists){
-	    db.close();
-	    return callback('User already exists');
-	}
-	else{
-	    var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
-	    
-	    db.close();
-	    
-	    return callback(0);
-	}
+	await checkIfUserExists(user_id, function(result){
+	    if(result === true){
+		db.close();
+		return callback('User already exists');
+	    }
+	});
+
+	var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
+	
+	db.close();
+	
+	return callback(0);
+	
     }
     catch(err){
 	console.log(err);
