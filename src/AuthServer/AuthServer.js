@@ -80,24 +80,21 @@ async function addUser(user_id, group_id, password, callback){
 
     var db = new Database(defaultDBObject);
     
-    try{
-	await checkIfUserExists(user_id, function(result){
-	    if(result === true){
-		db.close();
-		return callback('User already exists');
-	    }
-	});
+    
+    var doesUserExist = await checkIfUserExists(user_id, function(result){
+	return result;
+    });
 
-	var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
-	
+    if(doesUserExist){
 	db.close();
-	
-	return callback(0);
-	
+	return callback('User already exists');
     }
-    catch(err){
-	console.log(err);
-    }
+    
+    var results = await db.query('INSERT INTO AuthDatabase VALUES(?, ?, ?)', [user_id, group_id, password])
+    
+    db.close();
+    
+    return callback(0);
     
 }
 

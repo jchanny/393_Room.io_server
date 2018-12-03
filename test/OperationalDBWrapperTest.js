@@ -79,7 +79,7 @@ describe('test createNewUser()', function(){
     it('Should return error if username already exists', async function(){
 	try{
 	     await OpServer.createNewUser("111", "fdsd", "2222", function(result){
-		return assert.equal(result, 'User already exists, please select another username.');
+		return assert.equal(result, 'User already exists.');
 	    });
 
 	}
@@ -145,9 +145,27 @@ describe('test registerUser', function(){
     });
 
     it('Should check if user already exists', async function(){
-	var result = await OpServer.registerUser("111", "a", "2222", "bob","test");
-	return assert.equal(result, 'User already exists.');
+	await OpServer.registerUser("111", "a", "2222", "bob","test", function(result){
+	    return assert.equal(result, 'User already exists.');
+	});
+
     });
+
+    it("Add user if group doesn't exist already", async function(){
+	try{
+	    await OpServer.registerUser("nogroup", "a", "newgroup", "irrelelvant", "email", function(result){
+		
+	    });
+	}catch(e){
+	    console.log(e);
+	    return assert.fail();
+	}
+    });
+
+    it("Add user to existing group", async function(){
+	return assert.fail();
+    });
+    
 });
 
 describe('test fetchGroupData', function(){
@@ -165,7 +183,15 @@ describe('test fetchGroupData', function(){
     });
 
     it('returns correct group data if group corresponds to valid group', async function(){
-	
+	return await OpServer.fetchGroupData("newgroup", function(result){
+	});
     });
 });
 
+describe('test modifyGroupData', function(){
+    
+});
+
+describe('test loginUser', function(){
+    
+});
