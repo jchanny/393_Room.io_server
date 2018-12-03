@@ -21,6 +21,12 @@ async function setUpEnvironment(){
     db.close();
 }
 
+describe('test returnContinuation()', function(){
+    it('Should return param', function(){
+	var result = AuthServer.returnContinuation(2);
+	assert.equal(result, 2);
+    });
+});
 
 describe('test checkIfUserExists()', function(){
     it('Should return error if user_id not string', function(){

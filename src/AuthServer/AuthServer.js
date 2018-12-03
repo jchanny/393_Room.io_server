@@ -15,6 +15,10 @@ const defaultDBObject = {
 const port = 3000;
 const INVALID_ARGUMENT_TYPE = 'Input argument is of wrong type.';
 
+function returnContinuation(result){
+    return result;
+}
+
 //returns true if user exists, false otherwise
 async function checkIfUserExists(user_id, callback){
     if(typeof user_id != 'string')
@@ -81,9 +85,7 @@ async function addUser(user_id, group_id, password, callback){
     var db = new Database(defaultDBObject);
     
     
-    var doesUserExist = await checkIfUserExists(user_id, function(result){
-	return result;
-    });
+    var doesUserExist = await checkIfUserExists(user_id, returnContinuation);
 
     if(doesUserExist){
 	db.close();
@@ -117,7 +119,7 @@ async function deleteUser(user_id, callback){
     
 }
 
-
+module.exports.returnContinuation = returnContinuation;
 module.exports.getUserGroup = getUserGroup;
 module.exports.addUser = addUser;
 module.exports.validateCredentials = validateCredentials;
