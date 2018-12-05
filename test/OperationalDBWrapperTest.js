@@ -4,6 +4,10 @@ const OpServer = require('../src/OperationalServer/OperationalDBWrapper.js');
 const MongoClient = require('mongodb').MongoClient;
 const connStr = 'mongodb://localhost:27017';
 
+describe('test returnContinuation', function(){
+    assert.equal(OpServer.returnContinuation(1), 1);
+});
+
 //set up test environment, add user called Bob, group 
 describe('test checkCredentials()' ,function(){
     it("Should return error if user_id not string", function(){
@@ -153,8 +157,14 @@ describe('test registerUser', function(){
 
     it("Add user if group doesn't exist already", async function(){
 	try{
-	    await OpServer.registerUser("nogroup", "a", "newgroup", "irrelelvant", "email", function(result){
-		
+	    await OpServer.registerUser("nogroup", "a", "newgroupA", "irrelelvant", "email", async function(result){
+		await MongoClient.connect(connStr, function(err, client){
+		    if(err) throw err;
+		    const db = client.db('test');
+		    db.collection("OperationalDatabase").find({group_id : "newgroupA"}).toArray(function(error, results){
+			client.close();
+		    });
+		});
 	    });
 	}catch(e){
 	    console.log(e);
@@ -163,7 +173,20 @@ describe('test registerUser', function(){
     });
 
     it("Add user to existing group", async function(){
-	return assert.fail();
+	try{
+	   return await OpServer.registerUser("nogroupA", "a", "newgroupA", "irrelelvant", "email", async function(result){
+		return await MongoClient.connect(connStr, function(err, client){
+		    if(err) throw err;
+		    const db = client.db('test');
+		    db.collection("OperationalDatabase").find({group_id : "newgroupA"}).toArray(function(error, results){
+			client.close();
+		    });
+		});
+	    });
+	}catch(e){
+	    console.log(e);
+	    return assert.fail();
+	}
     });
     
 });
@@ -178,20 +201,117 @@ describe('test fetchGroupData', function(){
 
     it('returns {} if group_id does not correspond to valid group', async function(){
 	return await OpServer.fetchGroupData("bob", function(result){
-	    return assert.equal(result, 'undefined');
+	    if(typeof result === 'undefined')
+		return assert.equal(true, true);
+	    else
+		return assert.fail();
 	});
     });
 
     it('returns correct group data if group corresponds to valid group', async function(){
-	return await OpServer.fetchGroupData("newgroup", function(result){
+	return await OpServer.fetchGroupData("newgroupA", async function(result){
+	    try{
+		return await MongoClient.connect(connStr, function(err, client){
+		    if(err) throw err;
+		    const db = client.db('test');
+		    db.collection("OperationalDatabase").find({group_id:"newgroupA"}).toArray(function(error, results){
+			client.close();
+		    });
+		});
+	    }
+	    catch(e){
+		console.log(e);
+		return assert.fail();
+	    }
 	});
     });
 });
 
 describe('test modifyGroupData', function(){
-    
+    it('Should return error if group_id not string', function(){
+	OpServer.modifyGroupData(111,{}, function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	});
+    });
+
+    it('Should return error if payload is empty', function(){
+	OpServer.modifyGroupData("bbb", null, function(result){
+	    assert.equal(result,'No payload.');
+	});
+    });
+
+    it('Should replace data correctly.', async function(){
+	try{
+	    return await OpServer.modifyGroupData("newgroup", {"group_id" : "newgroup","result":"oneliner"}, async function(result){
+		if(result === 'Success'){
+		    return await OpServer.fetchGroupData("newgroup", function(results){
+			if(results)
+			    return assert.equal(1,1);
+			else
+			    return assert.fail();
+		    });
+		}
+		else{
+		    return assert.fail();
+		}
+	    });
+	}
+	catch(e){
+	    console.log(e);
+	    assert.fail();
+	}
+    });
 });
 
 describe('test loginUser', function(){
+    it('Should throw error if user_id is not a string', function(){
+	OpServer.loginUser(111, "2222", function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	});
+    });
+
+    it('Should throw error if password is not string', function(){
+	OpServer.loginUser("111", 2222, function(result){
+	    assert.equal(result, 'Input argument is of wrong type.');
+	});
+    });
+
+    it('Should return user does not exist if user does not exist', async function(){ 
+	try{
+	    return await OpServer.loginUser("doesntExist","bleh", function(result){
+		assert.equal(result, "User doesn't exist.");
+	    });
+	}
+	catch(e){
+	    console.log(e);
+	    assert.fail()
+	}
+    });
+
+    it('Should say invalid credentials if credentials do not match', async function(){
+	try{
+	    return await OpServer.loginUser("111", "b", function(result){
+		assert.equal(result, "Invalid credentials.");
+	    });
+	}
+	catch(e){
+	    console.log(e);
+	    assert.fail();
+	}
+    });
     
+    it('Should return group data if user entered correct credentials', async function(){
+	try{
+	    return await OpServer.loginUser("nogroupA", "newgroup", function(result){
+		if(result){
+		    return assert.equal(true, true);
+		}
+		else
+		    return assert.fail();
+	    });
+	}catch(e){
+	    console.log(e);
+	    assert.fail();
+	}
+    })
 });

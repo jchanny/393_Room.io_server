@@ -5,6 +5,10 @@ const mongoPort = 27017;
 const MongoClient = require('mongodb').MongoClient;
 const connStr = 'mongodb://localhost:27017';
 
+function returnContinuation(result){
+    return result;
+}
+
 //returns true if user_id, password match a user in Auth Database
 async function checkCredentials(user_id, password,callback){
     if(typeof user_id != 'string' || typeof password != 'string')
@@ -69,6 +73,8 @@ async function fetchGroupData(group_id, callback){
 
 //for modifying groupdata
 async function modifyGroupData(group_id, payload, callback){
+    if(typeof group_id != 'string')
+	return callback('Input argument is of wrong type.');
     if(payload){
 	return await MongoClient.connect(connStr, function(err, client){
 	    if(err) throw err;
@@ -139,7 +145,7 @@ async function registerUser(user_id, password, group_id, name, email, callback){
 		group_id : group_id,
 		group_admin_user_id : user_id,
 		members : [userDataObj],
-		groupTasks : [],
+		group_tasks : [],
 		messages : []
 	    };
 
@@ -161,11 +167,14 @@ async function registerUser(user_id, password, group_id, name, email, callback){
 }
 
 
-
 //main function that handles user login, fetches data
 //use callback to capture group data payload
 async function loginUser(user_id, password, callback){
-    var result = await checkCredentials(user_id, password);
+    
+    if(typeof user_id!= 'string' || typeof password != 'string')
+	return callback('Input argument is of wrong type.');
+    
+    var result = await checkCredentials(user_id, password, returnContinuation);
 
     if(result === "User doesn't exist"){
 	return callback("User doesn't exist.");
@@ -175,15 +184,15 @@ async function loginUser(user_id, password, callback){
     
     //find user group
     var group;
-    await AuthServer.getUserGroup(user_id, function(res){
-	group = res;
-    });
+    group = await AuthServer.getUserGroup(user_id, returnContinuation);
+    
     return await fetchGroupData(group, function(result){
 	callback(result);
     });
     
 }
 
+module.exports.returnContinuation = returnContinuation;
 module.exports.checkCredentials = checkCredentials;
 module.exports.createNewUser = createNewUser;
 module.exports.fetchGroupData = fetchGroupData;
